@@ -16,11 +16,10 @@ app.get("/api/interventions", (req, res) => {
 });
 app.post("/api/nterventions", (req, res) => {
   const { error } = validateIntervention(req.body); //getting result.error
-  if (error) {
+  if (error)
     //400 bad request
-    res, status(400).send(result.error.details[0].message);
-    return;
-  }
+    return res.status(400).send(result.error.details[0].message);
+
   const intervention = {
     id: interventions.length + 1,
     name: req.body.name //reading from the body of the request
@@ -35,14 +34,14 @@ app.put("/api/interventions/:id", (req, res) => {
     c => c.id === parseInt(req.params.id)
   );
   if (!intervention)
-    res.status(404).send("the intervention with the given id was not found");
+    return res
+      .status(404)
+      .send("the intervention with the given id was not found");
   //validate
   const { error } = validateIntervention(req.body); //getting result.error
-  if (error) {
+  if (error)
     //400 bad request
-    res, status(400).send(result.error.details[0].message);
-    return;
-  }
+    return res, status(400).send(result.error.details[0].message);
   //update the intervention
   intervention.name = req.body.name;
   //return updated intervention to client
@@ -56,13 +55,30 @@ function validateIntervention(intervention) {
   };
   return Joi.validate(intervention, schema); //returns an object
 }
+
+app.delete("/api/interventions/:id", (req, res) => {
+  const intervention = interventions.find(
+    c => c.id === parseInt(req.params.id)
+  );
+  if (!intervention)
+    return res
+      .status(404)
+      .send("the intervention with the given id was not found");
+  //delete
+  const index = interventions.indexOf(intervention);
+  interventions.splice(index, 1);
+  res.send(intervention);
+});
+
 app.get("/api/interventions/:id", (req, res) => {
   const intervention = interventions.find(
     c => c.id === parseInt(req.params.id)
   ); //return intervention of a given id
   //404(object not found)
   if (!intervention)
-    res.status(404).send("the intervention with the given id was not found");
+    return res
+      .status(404)
+      .send("the intervention with the given id was not found");
   res.send(intervention);
 });
 //PORT env
